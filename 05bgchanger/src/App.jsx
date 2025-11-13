@@ -1,21 +1,37 @@
 import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
 import './App.css'
-import Box from './components/box.jsx'
+
+function Box (props) {
+  const [bgcolor, setbgcolor] = useState("");
+  document.body.style.backgroundColor = bgcolor;
+
+  return (
+    <button 
+      style={{background : props.color}}
+      onClick={()=>setbgcolor(props.color)}
+    >
+      {props.text}
+    </button>
+  )
+}
 
 function App() {
 
   return (
     <>
       <div id='bigbox'>
-        <Box text='Red' iid ='red'/>
-        <Box text='Blue' iid ='blue'/>
-        <Box text='Yellow' iid ='Yellow'/>
-        <Box text='Greeen' iid ='Green'/>
+        <Box text='Red' color='red' />
+        <Box text='Blue' color='blue' />
+        <Box text='Yellow' color='yellow' />
+        <Box text='Green' color='green' />
+        <Box text='Pink' color='pink' />
+        <Box text='Purple' color='purple' />
+        <Box text='Orange' color='orange' />
+        <Box text='Black' color='black' />
       </div>
     </>
   )
 }
+
 
 export default App
