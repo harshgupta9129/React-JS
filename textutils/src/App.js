@@ -38,8 +38,8 @@ function App() {
   return (
     <BrowserRouter>
     <div>
-      <Alert alert={alert}/>
       <Navbar title = "TextUtils" aboutText = "About Us" mode={mode} toggleChange={toggleChange}/>
+      <Alert alert={alert}/>
     </div>
     <div className="container">
     <Routes>
