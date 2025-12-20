@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import NewsItem from './NewsItem'
 import monkey from "../monkey.jpg"
+import Loader from './Loader';
 
 export default class News extends Component {
 
@@ -14,23 +15,26 @@ export default class News extends Component {
             pageSize: 10,
             url: `${this.mainurl}`,
             nextpage: null,
-            query: ""
+            query: "",
+            loading: false
         };
     }
 
     async componentDidMount() {
 
+        this.setState({loading: true})
         let data = await fetch(this.state.url);
         let parseData = await data.json();
         this.setState({
             results: parseData.results,
-            nextpage: parseData.nextPage
+            nextpage: parseData.nextPage,
+            loading: false
         });
     }
 
     async componentDidUpdate(prevProps) {
         if (prevProps.query !== this.props.query) {
-
+            this.setState({loading: true})
             const url = `${this.mainurl}&q=${this.props.query}`
 
             
@@ -40,7 +44,8 @@ export default class News extends Component {
             this.setState({
                 url: url,
                 results: parseData.results || [],
-                nextpage: parseData.nextPage
+                nextpage: parseData.nextPage,
+                loading: false
             });
 
         }
@@ -59,23 +64,26 @@ export default class News extends Component {
     // }
 
     handleNext = async () => {
+        this.setState({loading: true})
         let tempurl = `${this.state.url}&page=${this.state.nextpage}`;
         let data = await fetch(tempurl);
         let parseData = await data.json();
         this.setState({
             results: parseData.results,
-            nextpage: parseData.nextPage
+            nextpage: parseData.nextPage,
+            loading: false
         });
-        console.log(this.state.url);
     } 
 
     render() {
         return (
             <div className="container my-3">
                 <h2 className='container m-3'>Monkey News - Top HeadLines</h2>
-        
+                
+                {this.state.loading && <Loader/>}
+
                 <div className="row justify-content-center">
-                    {this.state.results.map((element)=>{
+                    {!this.state.loading && this.state.results.map((element)=>{
                         return <div key={element.link} className="col-md-3 d-flex justify-content-center">
                                     <NewsItem imageurl={(element.image_url ? element.image_url : monkey)} title={element.title} description={element.description} url={element.link}/>
                                 </div>
