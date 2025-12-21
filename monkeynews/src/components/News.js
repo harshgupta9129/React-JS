@@ -13,7 +13,7 @@ export default class News extends Component {
     this.state = {
       articles: [],
       page: 1,
-      pageSize: 8,
+      pageSize: 12,
       totalResults: 0,
       loading: false,
     };

@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import News from "./components/News";
 import { NavbarWithNavigate } from "./components/Navbar";
+import Footer from "./components/Footer";
 
 export default class App extends Component {
   state = {
@@ -26,6 +27,7 @@ export default class App extends Component {
           <Route path="/sports" element={<News category="sports" />} />
           <Route path="/technology" element={<News category="technology" />} />
         </Routes>
+        <Footer/>
       </Router>
     );
   }
