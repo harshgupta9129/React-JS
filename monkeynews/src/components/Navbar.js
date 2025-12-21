@@ -1,47 +1,78 @@
-import React, { Component } from 'react'
+import React, { Component } from "react";
+import { Link, useNavigate } from "react-router-dom";
 
-export default class Navbar extends Component {
-
+class Navbar extends Component {
   state = {
-    query:""
-  }
+    query: "",
+  };
 
   handleChange = (e) => {
-    this.setState({query:e.target.value});
-  }
+    this.setState({ query: e.target.value });
+  };
 
-  handleSubmit = (e)=> {
+  handleSubmit = (e) => {
     e.preventDefault();
-    this.props.handleQuery(this.state.query);
-  }
-  
-  render() {
 
+    if (this.state.query.trim() === "") return;
+
+    this.props.handleQuery(this.state.query);
+    this.props.navigate("/");
+    this.setState({ query: "" });
+  };
+
+  render() {
     return (
-      <div>
-        <nav className="navbar navbar-expand-lg bg-body-tertiary p-3">
+      <nav className="navbar navbar-expand-lg bg-body-tertiary p-3">
         <div className="container-fluid">
-            <a className="navbar-brand" href="/">Navbar</a>
-            <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+          <Link className="navbar-brand" to="/">
+            MonkeyNews
+          </Link>
+
+          <button
+            className="navbar-toggler"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#navbarNav"
+          >
             <span className="navbar-toggler-icon"></span>
-            </button>
-            <div className="collapse navbar-collapse" id="navbarSupportedContent">
-            <ul className="navbar-nav me-auto mb-2 mb-lg-0">
-                <li className="nav-item">
-                <a className="nav-link active" aria-current="page" href="/">Home</a>
+          </button>
+
+          <div className="collapse navbar-collapse" id="navbarNav">
+            <ul className="navbar-nav me-auto">
+              {[
+                "business",
+                "entertainment",
+                "health",
+                "science",
+                "sports",
+                "technology",
+              ].map((cat) => (
+                <li className="nav-item" key={cat}>
+                  <Link className="nav-link" to={`/${cat}`}>
+                    {cat.charAt(0).toUpperCase() + cat.slice(1)}
+                  </Link>
                 </li>
-                <li className="nav-item">
-                <a className="nav-link active" aria-current="page" href="/">About</a>
-                </li>
+              ))}
             </ul>
-            <form className="d-flex" role="search" onSubmit={this.handleSubmit}>
-                <input className="form-control me-2" type="search" placeholder="Search" aria-label="Search" onChange={this.handleChange} value={this.state.query}/>
-                <button className="btn btn-outline-success" type="submit">Search</button>
+
+            <form className="d-flex" onSubmit={this.handleSubmit}>
+              <input
+                className="form-control me-2"
+                type="search"
+                placeholder="Search news..."
+                value={this.state.query}
+                onChange={this.handleChange}
+              />
+              <button className="btn btn-outline-success">Search</button>
             </form>
-            </div>
+          </div>
         </div>
-        </nav>
-      </div>
-    )
+      </nav>
+    );
   }
+}
+
+export function NavbarWithNavigate(props) {
+  const navigate = useNavigate();
+  return <Navbar {...props} navigate={navigate} />;
 }

@@ -1,99 +1,119 @@
-import React, { Component } from 'react'
-import NewsItem from './NewsItem'
-import monkey from "../monkey.jpg"
-import Loader from './Loader';
+import React, { Component } from "react";
+import NewsItem from "./NewsItem";
+import Loader from "./Loader";
+import monkey from "../monkey.jpg";
 
 export default class News extends Component {
+  static defaultProps = {
+    category: "general",
+  };
 
-    mainurl = `https://newsdata.io/api/1/latest?apikey=pub_1c9b0630410448bdaeb28b589cd1601b&country=in&&language=en&size=8`
+  constructor() {
+    super();
+    this.state = {
+      articles: [],
+      page: 1,
+      pageSize: 8,
+      totalResults: 0,
+      loading: false,
+    };
+  }
 
-    constructor() {
-        super();
-        this.state = {
-            results: [],
-            page: 1,
-            pageSize: 10,
-            url: `${this.mainurl}`,
-            nextpage: null,
-            query: "",
-            loading: false
-        };
+  apiKey = "c051ee8ef68244929c279fec39ba8454";
+
+  buildUrl = () => {
+    const { category, query } = this.props;
+    const { page, pageSize } = this.state;
+
+    // If search query exists
+    if (query && query.trim() !== "") {
+      return `https://newsapi.org/v2/everything?q=${encodeURIComponent(query)}&page=${page}&pageSize=${pageSize}&apiKey=${this.apiKey}`;
     }
 
-    async componentDidMount() {
+    // If no search query, fetch ALL articles in that category
+    return `https://newsapi.org/v2/everything?q=${category}&page=${page}&pageSize=${pageSize}&apiKey=${this.apiKey}`;
+  };
 
-        this.setState({loading: true})
-        let data = await fetch(this.state.url);
-        let parseData = await data.json();
-        this.setState({
-            results: parseData.results,
-            nextpage: parseData.nextPage,
-            loading: false
-        });
+  componentDidMount() {
+    this.fetchNews();
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    if (
+      prevProps.query !== this.props.query ||
+      prevProps.category !== this.props.category ||
+      prevState.page !== this.state.page
+    ) {
+      this.fetchNews();
     }
+  }
 
-    async componentDidUpdate(prevProps) {
-        if (prevProps.query !== this.props.query) {
-            this.setState({loading: true})
-            const url = `${this.mainurl}&q=${this.props.query}`
+  fetchNews = async () => {
+    this.setState({ loading: true });
 
-            
-            let data = await fetch(url);
-            let parseData = await data.json();
-            
-            this.setState({
-                url: url,
-                results: parseData.results || [],
-                nextpage: parseData.nextPage,
-                loading: false
-            });
+    try {
+      const res = await fetch(this.buildUrl());
+      const data = await res.json();
 
-        }
+      this.setState({
+        articles: data.articles || [],
+        totalResults: data.totalResults || 0,
+        loading: false,
+      });
+    } catch (error) {
+      console.error("Error fetching news:", error);
+      this.setState({ loading: false });
     }
+  };
 
-    // handlePrevious = async () => {
-    //     let url = `${this.mainurl}&page=${this.state.page - 1}&pagesize=${this.state.pageSize}`;
-    //     let data = await fetch(url);
-    //     let parseData = await data.json();
-    //     this.setState({
-    //         results: parseData.results,
-    //         page: this.state.page - 1
-    //     });
-    //     console.log(url);
-        
-    // }
+  render() {
+    return (
+      <div className="container my-4">
+        <h2 className="text-center mb-4">
+          Monkey News – {this.props.category.toUpperCase()}
+        </h2>
 
-    handleNext = async () => {
-        this.setState({loading: true})
-        let tempurl = `${this.state.url}&page=${this.state.nextpage}`;
-        let data = await fetch(tempurl);
-        let parseData = await data.json();
-        this.setState({
-            results: parseData.results,
-            nextpage: parseData.nextPage,
-            loading: false
-        });
-    } 
+        {this.state.loading && <Loader />}
 
-    render() {
-        return (
-            <div className="container my-3">
-                <h2 className='container m-3'>Monkey News - Top HeadLines</h2>
-                
-                {this.state.loading && <Loader/>}
+        <div className="row justify-content-center">
+          {!this.state.loading &&
+            this.state.articles.map((el) => (
+              <div
+                className="col-md-3 d-flex justify-content-center"
+                key={el.url}
+              >
+                <NewsItem
+                  title={el.title}
+                  description={el.description}
+                  imageurl={el.urlToImage || monkey}
+                  url={el.url}
+                  pubDate={el.publishedAt}
+                />
+              </div>
+            ))}
+        </div>
 
-                <div className="row justify-content-center">
-                    {!this.state.loading && this.state.results.map((element)=>{
-                        return <div key={element.link} className="col-md-3 d-flex justify-content-center">
-                                    <NewsItem imageurl={(element.image_url ? element.image_url : monkey)} title={element.title} description={element.description} url={element.link}/>
-                                </div>
-                    })}
-                </div>
-                <div className='container d-flex justify-content-end'>
-                {/* <button disabled={this.state.nextpage === null} type="button" className="btn btn-primary" onClick={this.handlePrevious}>Previous</button> */}
-                <button disabled={false} type="button" className="btn btn-primary" onClick={this.handleNext}>Next</button>
-                </div>
-            </div>
-        )
-    }
+        <div className="d-flex justify-content-between my-3">
+          <button
+            disabled={this.state.page <= 1}
+            className="btn btn-primary"
+            onClick={() => this.setState({ page: this.state.page - 1 })}
+          >
+            Previous
+          </button>
+
+          <button
+            disabled={
+              this.state.page >=
+              Math.ceil(this.state.totalResults / this.state.pageSize)
+            }
+            className="btn btn-primary"
+            onClick={() => this.setState({ page: this.state.page + 1 })}
+          >
+            Next
+          </button>
+        </div>
+      </div>
+    );
+  }
 }

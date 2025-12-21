@@ -1,26 +1,32 @@
-import React, { Component } from 'react'
-import Navbar from './components/Navbar'
-import News from './components/News'
+import React, { Component } from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import News from "./components/News";
+import { NavbarWithNavigate } from "./components/Navbar";
 
 export default class App extends Component {
-
   state = {
-    query:""
-  }
+    query: "",
+  };
 
-  handleQuery = (searchText)=> {
-    this.setState({
-      query:searchText
-    })
-  }
+  handleQuery = (searchText) => {
+    this.setState({ query: searchText });
+  };
 
   render() {
     return (
-      <div>
-        <Navbar handleQuery={this.handleQuery}/>
-        <News query={this.state.query}/>
-      </div>
-    )
+      <Router>
+        <NavbarWithNavigate handleQuery={this.handleQuery} />
+
+        <Routes>
+          <Route path="/" element={<News query={this.state.query} />} />
+          <Route path="/business" element={<News category="business" />} />
+          <Route path="/entertainment" element={<News category="entertainment" />} />
+          <Route path="/health" element={<News category="health" />} />
+          <Route path="/science" element={<News category="science" />} />
+          <Route path="/sports" element={<News category="sports" />} />
+          <Route path="/technology" element={<News category="technology" />} />
+        </Routes>
+      </Router>
+    );
   }
 }
-
