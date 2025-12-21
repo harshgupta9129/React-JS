@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import NewsItem from "./NewsItem";
 import Loader from "./Loader";
 import monkey from "../monkey.jpg";
+import InfiniteScroll from "react-infinite-scroll-component";
 
 export default class News extends Component {
   static defaultProps = {
@@ -41,8 +42,7 @@ export default class News extends Component {
   componentDidUpdate(prevProps, prevState) {
     if (
       prevProps.query !== this.props.query ||
-      prevProps.category !== this.props.category ||
-      prevState.page !== this.state.page
+      prevProps.category !== this.props.category
     ) {
       this.fetchNews();
     }
@@ -66,6 +66,18 @@ export default class News extends Component {
     }
   };
 
+  fetchData = async () => {
+    this.setState({ page: this.state.page + 1 }, 
+      async () => {
+        const res = await fetch(this.buildUrl());
+        const data = await res.json();
+
+        this.setState({
+          articles: this.state.articles.concat(data.articles || []),
+        });
+    });
+  };
+
   render() {
     return (
       <div className="container my-4">
@@ -73,13 +85,22 @@ export default class News extends Component {
           Monkey News – {this.props.category.toUpperCase()}
         </h2>
 
-        {this.state.loading && <Loader />}
-
-        <div className="row justify-content-center">
-          {!this.state.loading &&
-            this.state.articles.map((el) => (
+        {/* {this.state.loading && <Loader />} */}
+        <InfiniteScroll
+          dataLength={this.state.articles.length} //This is important field to render the next data
+          next={this.fetchData}
+          hasMore={this.state.totalResults > this.state.articles.length}
+          loader={<Loader />}
+          endMessage={
+            <p style={{ textAlign: "center" }}>
+              <b>Yay! You have seen it all</b>
+            </p>
+          }
+        >
+          <div className="row justify-content-center">
+            {this.state.articles.map((el) => (
               <div
-                className="col-md-3 d-flex justify-content-center"
+                className="col-md-4 d-flex justify-content-center"
                 key={el.url}
               >
                 <NewsItem
@@ -88,31 +109,12 @@ export default class News extends Component {
                   imageurl={el.urlToImage || monkey}
                   url={el.url}
                   pubDate={el.publishedAt}
+                  source={el.source.name}
                 />
               </div>
             ))}
-        </div>
-
-        <div className="d-flex justify-content-between my-3">
-          <button
-            disabled={this.state.page <= 1}
-            className="btn btn-primary"
-            onClick={() => this.setState({ page: this.state.page - 1 })}
-          >
-            Previous
-          </button>
-
-          <button
-            disabled={
-              this.state.page >=
-              Math.ceil(this.state.totalResults / this.state.pageSize)
-            }
-            className="btn btn-primary"
-            onClick={() => this.setState({ page: this.state.page + 1 })}
-          >
-            Next
-          </button>
-        </div>
+          </div>
+        </InfiniteScroll>
       </div>
     );
   }
