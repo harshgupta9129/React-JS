@@ -14,13 +14,11 @@ export default class News extends Component {
     this.state = {
       articles: [],
       page: 1,
-      pageSize: 12,
+      pageSize: 18,
       totalResults: 0,
       loading: false,
     };
   }
-
-  apiKey = "c051ee8ef68244929c279fec39ba8454";
 
   buildUrl = () => {
     const { category, query } = this.props;
@@ -28,11 +26,11 @@ export default class News extends Component {
 
     // If search query exists
     if (query && query.trim() !== "") {
-      return `https://newsapi.org/v2/everything?q=${encodeURIComponent(query)}&page=${page}&pageSize=${pageSize}&apiKey=${this.apiKey}`;
+      return `https://newsapi.org/v2/everything?q=${encodeURIComponent(query)}&page=${page}&pageSize=${pageSize}&apiKey=${this.props.apiKey}`;
     }
 
     // If no search query, fetch ALL articles in that category
-    return `https://newsapi.org/v2/everything?q=${category}&page=${page}&pageSize=${pageSize}&apiKey=${this.apiKey}`;
+    return `https://newsapi.org/v2/everything?q=${category}&page=${page}&pageSize=${pageSize}&apiKey=${this.props.apiKey}`;
   };
 
   componentDidMount() {
@@ -49,33 +47,43 @@ export default class News extends Component {
   }
 
   fetchNews = async () => {
+    this.props.setProgress(10)
     this.setState({ loading: true });
 
     try {
       const res = await fetch(this.buildUrl());
+      this.props.setProgress(30)
       const data = await res.json();
-
+      this.props.setProgress(50)
+      
       this.setState({
         articles: data.articles || [],
         totalResults: data.totalResults || 0,
         loading: false,
       });
+      this.props.setProgress(70)
     } catch (error) {
       console.error("Error fetching news:", error);
       this.setState({ loading: false });
     }
+    this.props.setProgress(100)
   };
 
   fetchData = async () => {
+    this.props.setProgress(10)
     this.setState({ page: this.state.page + 1 }, 
       async () => {
+        this.props.setProgress(30)
         const res = await fetch(this.buildUrl());
+        this.props.setProgress(50)
         const data = await res.json();
-
+        this.props.setProgress(70)
         this.setState({
           articles: this.state.articles.concat(data.articles || []),
         });
+        this.props.setProgress(80)
     });
+    this.props.setProgress(100)
   };
 
   render() {
